@@ -5,7 +5,7 @@
         cgull (Discord: cgull#4469)
     Makes the first boon reward offer all 4 core boons
 ]]
-ModUtil.RegisterMod("DontGetVorimed")
+ModUtil.Mod.Register("DontGetVorimed")
 
 local config = {
     ModName = "Dont Get Vorimed",
@@ -16,7 +16,7 @@ DontGetVorimed.BoonTakenFlag = nil
 
 -- When the first room is created, set the number of loot choices to 4
 -- This will persist until the first boon reward is received or rolled over
-ModUtil.WrapBaseFunction("ChooseStartingRoom", function ( baseFunc, ... )
+ModUtil.Path.Wrap("ChooseStartingRoom", function ( baseFunc, ... )
     if config.Enabled then
         LootChoiceExt.Choices = 4
         DontGetVorimed.BoonTakenFlag = false
@@ -24,7 +24,7 @@ ModUtil.WrapBaseFunction("ChooseStartingRoom", function ( baseFunc, ... )
     return baseFunc(...)
 end, DontGetVorimed)
 
-ModUtil.WrapBaseFunction("CreateLoot", function( baseFunc, args )
+ModUtil.Path.Wrap("CreateLoot", function( baseFunc, args )
     local lootData = args.LootData or LootData[args.Name]
     local loot = nil
     if DontGetVorimed.config.Enabled and not lootData.GodLoot and not DontGetVorimed.BoonTakenFlag then
@@ -41,7 +41,7 @@ ModUtil.WrapBaseFunction("CreateLoot", function( baseFunc, args )
 end, DontGetVorimed)
 
 -- After first boon reward has been selected, return to normal number of choices
-ModUtil.WrapBaseFunction("HandleUpgradeChoiceSelection", function ( baseFunc, screen, button )
+ModUtil.Path.Wrap("HandleUpgradeChoiceSelection", function ( baseFunc, screen, button )
     if DontGetVorimed.config.Enabled and not DontGetVorimed.BoonTakenFlag and #GetAllUpgradeableGodTraits() == 0 then
         if button.Data.God ~= nil then
             LootChoiceExt.Choices = 3
@@ -54,7 +54,7 @@ ModUtil.WrapBaseFunction("HandleUpgradeChoiceSelection", function ( baseFunc, sc
 end, DontGetVorimed)
 
 -- Removing Approval Process blockers on the 4-core boon
-ModUtil.WrapBaseFunction("CalcNumLootChoices", function( baseFunc )
+ModUtil.Path.Wrap("CalcNumLootChoices", function( baseFunc )
     if LootChoiceExt.Choices == 4 then
         return baseFunc() + GetNumMetaUpgrades("ReducedLootChoicesShrineUpgrade")
     else
@@ -63,7 +63,7 @@ ModUtil.WrapBaseFunction("CalcNumLootChoices", function( baseFunc )
 end, DontGetVorimed)
 
 -- If the player ever rerolls, reduce to 3 options
-ModUtil.WrapBaseFunction("DestroyBoonLootButtons", function ( baseFunc, lootData )
+ModUtil.Path.Wrap("DestroyBoonLootButtons", function ( baseFunc, lootData )
     baseFunc(lootData)
     if DontGetVorimed.config.Enabled and lootData.GodLoot and not DontGetVorimed.BoonTakenFlag then
         LootChoiceExt.Choices = 3
